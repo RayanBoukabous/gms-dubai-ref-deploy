@@ -1,0 +1,50 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V7
+.Trashes
+
+# Environnement (secrets)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Node
+node_modules/
+package-lock.json
+.next/
+.turbo/
+dist/
+build/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Docker volumes / data
+cognee_data/
+cognee_system/
+courses/*.pdf
+
+# Large binary assets
+*.pdf
+*.MP4
+*.mp4
+*.mov
+*.avi
+public/videos/
+
+# Logs
+*.log
+logs/
+
+# Misc
+.qodo/
+token_sessions.json
+tsconfig.tsbuildinfo

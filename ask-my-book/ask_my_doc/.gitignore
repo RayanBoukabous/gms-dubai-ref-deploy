@@ -1,0 +1,30 @@
+# Environnement
+.env
+askmydoc/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+*.egg-info/
+
+# Logs
+*.log
+logs/
+token_sessions.json
+
+# Next.js
+frontend/.next/
+frontend/node_modules/
+
+# Cognee
+cognee_system_data/
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,87 @@
+version: '3.9'
+
+services:
+
+  # ══════════════════════════════════════════════════════
+  #  GMS DUBAI WEBSITE  →  http://localhost:3000
+  # ══════════════════════════════════════════════════════
+  gms-front:
+    build:
+      context: ./gms-dubai-website-front
+      args:
+        NEXT_PUBLIC_RECAPTCHA_SITE_KEY: "6LfO-JssAAAAAAf8UYodtLjf-NYW6CIo3GvzSFxB"
+    ports:
+      - "3002:3000"
+    environment:
+      NODE_ENV: production
+      REGISTER_API_URL: "http://15.236.40.235:8008/register"
+      REGISTER_API_KEY: "f9e7a83d-4c5b-4e1a-96d2-2b3d4f6a8c7e"
+      RECAPTCHA_SECRET_KEY: "6LfO-JssAAAAANMV3dy55pW5-RRT-ZaVo7xt1rAE"
+      NEXT_PUBLIC_RECAPTCHA_SITE_KEY: "6LfO-JssAAAAAAf8UYodtLjf-NYW6CIo3GvzSFxB"
+    restart: unless-stopped
+
+  # ══════════════════════════════════════════════════════
+  #  ASK MY BOOK — PostgreSQL
+  # ══════════════════════════════════════════════════════
+  askbook-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: askbook
+      POSTGRES_PASSWORD: askbook2026
+      POSTGRES_DB: askbook
+    volumes:
+      - askbook_pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U askbook -d askbook"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # ══════════════════════════════════════════════════════
+  #  ASK MY BOOK — Backend FastAPI  →  http://localhost:8000
+  # ══════════════════════════════════════════════════════
+  askbook-backend:
+    build:
+      context: ./ask-my-book/ask_my_doc/backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./ask-my-book/ask_my_doc/backend/.env   # loads OPENAI_API_KEY + LLM_MODEL
+    environment:
+      DATABASE_URL: "postgresql://askbook:askbook2026@askbook-db:5432/askbook"
+      JWT_SECRET: "gms-askbook-jwt-secret-2026-xK9pL"
+      COGNEE_DATA_DIR: "/app/cognee_data"
+      COGNEE_SYSTEM_DIR: "/app/cognee_system"
+    depends_on:
+      askbook-db:
+        condition: service_healthy
+    volumes:
+      - cognee_data:/app/cognee_data
+      - cognee_system:/app/cognee_system
+      - askbook_courses:/app/courses
+    restart: unless-stopped
+
+  # ══════════════════════════════════════════════════════
+  #  ASK MY BOOK — Frontend Next.js  →  http://localhost:3001
+  # ══════════════════════════════════════════════════════
+  askbook-frontend:
+    build:
+      context: ./ask-my-book/ask_my_doc/frontend
+      args:
+        BACKEND_URL: "http://askbook-backend:8000"
+        # Même origine navigateur → API sur la machine hôte (port 8000 publié par askbook-backend)
+        NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000"
+    ports:
+      - "3001:3000"
+    environment:
+      BACKEND_URL: "http://askbook-backend:8000"
+    depends_on:
+      - askbook-backend
+    restart: unless-stopped
+
+volumes:
+  askbook_pg_data:
+  cognee_data:
+  cognee_system:
+  askbook_courses:
